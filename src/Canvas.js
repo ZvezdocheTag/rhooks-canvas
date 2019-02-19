@@ -23,7 +23,17 @@ function type(d) {
 export default class Canvas extends React.PureComponent {
   state = {
     csvData: null,
+    canvas: null,
+    context: null,
+    rectFlag: false,
+    counter: 0,
+    layout: {
+      width: 0,
+      height: 0,
+      margin: { top: 20, right: 20, bottom: 30, left: 40 },
+    }
   }
+
   componentDidMount() {
     const canvas = d3.select("canvas").node(),
       context = canvas.getContext("2d");
@@ -32,46 +42,69 @@ export default class Canvas extends React.PureComponent {
       width = canvas.width - margin.left - margin.right,
       height = canvas.height - margin.top - margin.bottom;
 
-    const svg = d3
-      .select("svg")
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      
-    const x = d3.scaleLinear().rangeRound([0, width - 2]);
-    const y = d3.scaleLinear().rangeRound([height - 2, 0]);
-
     context.translate(margin.left, margin.top);
     context.globalCompositeOperation = "multiply";
     context.fillStyle = "rgba(60,180,240,0.6)";
 
-
     d3.tsv(csvTestUrl, (item) => type(item)).then((data) => {
-    const diamonds = data.slice(0, 500)
-    
       this.setState({
-        csvData: diamonds,
+        csvData: data,
+        canvas,
+        context,
+        layout: { margin, width, height }
       })
-    
-    x.domain(d3.extent(diamonds, function(d) { return d.carat; }));
-    y.domain(d3.extent(diamonds, function(d) { return d.price; }));
-
-        d3.shuffle(diamonds);
-
-        var t = d3.timer(function() {
-          var d;
-          // console.log(diamonds, d)
-          for (var i = 0, n = 500; i < n; ++i) {
-            if (!(d = diamonds.pop())) return t.stop();
-            context.fillRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
-          }
-        });
-
-
     })
   }
 
-  componentDidUpdate() {
+  rectClick = () => {
+    this.setState(prev => ({
+      rectFlag: !prev.rectFlag,
+      counter: !prev.rectFlag ? prev.counter + 1 : prev.counter
+    }))
+  }
+  componentDidUpdate(p, s) {
+    console.log(this.state, this.props, p, s, "DID")
+    let { csvData, context, counter, layout } = this.state;
+    const csvDataMeasure = counter * 1000;
+      if(csvData !== null) {
+        if(this.state.rectFlag) {
+          let csvDataCut = csvData.slice(0, csvDataMeasure);
+          const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
+          const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
+    
+          x.domain(d3.extent(csvDataCut, function(d) { return d.carat; }));
+          y.domain(d3.extent(csvDataCut, function(d) { return d.price; }));
+    
+          // this line do animation randomly ( dots appear in random position )
+          // d3.shuffle(csvDataCut);
+    
+          var t = d3.timer(function() {
+            var d;
+            for (var i = 0, n = 500; i < n; ++i) {
+              if (!(d = csvDataCut.pop())) return t.stop();
+              context.fillRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
+            }
+          });
 
+        } else {
+          let csvDataCut = csvData.slice(0, csvDataMeasure);
+          const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
+          const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
+    
+          x.domain(d3.extent(csvDataCut, function(d) { return d.carat; }));
+          y.domain(d3.extent(csvDataCut, function(d) { return d.price; }));
+    
+          // this line do animation randomly ( dots appear in random position )
+          var t = d3.timer(function() {
+            var d;
+            for (var i = 0, n = 500; i < n; ++i) {
+              if (!(d = csvDataCut.pop())) return t.stop();
+              context.clearRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
+            }
+          });
+        }
+
+    }
   }
 
   render() {
@@ -81,7 +114,7 @@ export default class Canvas extends React.PureComponent {
         <canvas width="960" height="960" />
         <svg width="960" height="960">
           <g transform="translate(200, 300)">
-              <rect x="0" y="0" fill="red" width="100px" height="100px"></rect>
+              <rect x="0" y="0" fill="red" width="100px" height="100px" onClick={this.rectClick}></rect>
           </g>
         </svg>
       </Wrap>

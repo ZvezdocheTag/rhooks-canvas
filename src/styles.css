@@ -1,0 +1,23 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+canvas,
+svg {
+  position: absolute;
+}
+
+.grid .tick line {
+  stroke: #fff;
+}
+
+.grid--x .domain {
+  fill: #e7e7e7;
+  stroke: none;
+}
+
+.grid--y .domain,
+.axis .domain {
+  display: none;
+}

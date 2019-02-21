@@ -38,12 +38,11 @@ export default class Canvas extends React.PureComponent {
   componentDidMount() {
     const canvas = d3.select("canvas").node(),
       context = canvas.getContext("2d");
+    const { layout: { margin } } = this.state;
+    const width = canvas.width - margin.left - margin.right,
+      height = canvas.height - margin.top - margin.bottom;
 
     this.d3timer = null;
-
-    const margin = { top: 20, right: 20, bottom: 30, left: 40 },
-      width = canvas.width - margin.left - margin.right,
-      height = canvas.height - margin.top - margin.bottom;
 
     context.translate(margin.left, margin.top);
     context.globalCompositeOperation = "multiply";
@@ -54,7 +53,7 @@ export default class Canvas extends React.PureComponent {
         csvData: data,
         canvas,
         context,
-        layout: { margin, width, height }
+        layout: { ...this.state.layout, width, height }
       })
     })
   }
@@ -68,33 +67,26 @@ export default class Canvas extends React.PureComponent {
       }))
     }
   }
+
   componentDidUpdate(p, s) {
-    console.log(this.state, this.props, p, s, "DID")
-    let { csvData, context, counter, layout, active } = this.state;
-    const csvDataMeasure = counter * 1000;
+    let { csvData, context, layout, active, rectFlag } = this.state;
 
-    const activeCluster = [[0, 5000], [6000, 10000], [13000, 18000], [20000, 25000]]
+    let csvDataCut = csvData.slice(0, 5000);
+      const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
+      const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
 
-      if(csvData !== null && active !== null) {
-        let csvDataCut = csvData.slice(activeCluster[active][0], activeCluster[active][1]);
-        const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
-        const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
-  
-        x.domain(d3.extent(csvDataCut, (d) => d.carat));
-        y.domain(d3.extent(csvDataCut, (d) => d.price));
+      x.domain(d3.extent(csvDataCut, (d) => d.carat));
+      y.domain(d3.extent(csvDataCut, (d) => d.price));
 
-        const add = this.addDots(context, x, y);
+      const add = this.addDots(context, x, y);
+      const remove = this.removeDots(context, x, y);
+      
+      if(rectFlag) {
         this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, add));
+      } else {
+        this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, remove));
 
-        // if(this.state.rectFlag) {
-
-        // } else {
-        //   // this line do animation randomly ( dots appear in random position )
-        //   const remove = this.removeDots(context, x, y);
-        //   this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, remove));
-        // }
-
-    }
+      }
   }
 
   removeDots = (context, x, y) => {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 
-export default class ExampleCanvas extends Component {
+export class TestC extends Component {
   state = {
     context: null,
     canvas: null,
@@ -28,7 +28,7 @@ export default class ExampleCanvas extends Component {
   }
 
   componentDidMount() {
-    var canvas = document.querySelector("canvas"),
+    const canvas = document.querySelector("canvas"),
       ctx = canvas.getContext("2d");
     const cols = 20,
       rows = 12
@@ -55,8 +55,6 @@ export default class ExampleCanvas extends Component {
     if(context !== null) {
 
       function loop() {
-  
-        context.setTransform(1,0,0,1,0,0);
         context.globalAlpha = 1;
         context.clearRect(0, 0, w, h);
         
@@ -65,6 +63,7 @@ export default class ExampleCanvas extends Component {
           var gx = (x|0) - y;
           if (gx >= 0 && gx < cols) {
             index = y * cols + gx;
+            console.log(gx, index)
             grid[index].trigger();
           }
         }
@@ -85,7 +84,7 @@ export default class ExampleCanvas extends Component {
       }
   
       function clearLoop() {
-        context.setTransform(1,0,0,1,0,0);
+        // context.setTransform(1,0,0,1,0,0);
         context.globalAlpha = 1;
         context.clearRect(0, 0, w, h);
 
@@ -151,14 +150,18 @@ Rectangle.prototype = {
 
     this.ctx.fillStyle = this.color;     // render this instance
     this.ctx.globalAlpha = Math.min(1, this.alpha);
-    this.ctx.fillRect(this.x, this.y, this.width, this.height);
+    this.ctx.fillRect(this.x -5 , this.y - 5, this.width, this.height);
   },
 
   reset: function() {
     if (this.triggered && this.done) { 
-      this.alpha = 0;                        // current alpha for this instance 
+      this.alpha -= this.speed;          // update alpha
+      this.done = (this.alpha <= 0);                       // current alpha for this instance 
       this.triggered = false;                // is running
       this.done = false; 
     }
+
+        this.ctx.globalAlpha = Math.min(1, this.alpha);
+    this.ctx.fillRect(this.x -5 , this.y - 5, this.width, this.height);
   }
 };

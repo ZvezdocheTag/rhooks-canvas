@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment, Component } from "react";
 import * as d3 from "d3";
 // import tsv from './data.tsv';
 import styled from 'styled-components';
@@ -20,40 +20,33 @@ function type(d) {
  * 3. Manipulate data with slicing and pushing new one
  * 4. Update data on canvas with events
  */
-export class DiamondsScatters extends React.PureComponent {
+export class DiamondsScatters extends Component {
   state = {
     csvData: null,
     canvas: null,
     context: null,
     rectFlag: false,
     counter: 0,
-    active: null,
+    active: 0,
     layout: {
-      width: 0,
-      height: 0,
       margin: { top: 20, right: 20, bottom: 30, left: 40 },
     }
   }
 
   componentDidMount() {
-    const canvas = d3.select("canvas").node(),
+    const canvas = d3.select("canvas#diamonds").node(),
       context = canvas.getContext("2d");
-    const { layout: { margin } } = this.state;
-    const width = canvas.width - margin.left - margin.right,
-      height = canvas.height - margin.top - margin.bottom;
-
     this.d3timer = null;
 
-    context.translate(margin.left, margin.top);
     context.globalCompositeOperation = "multiply";
     context.fillStyle = "rgba(60,180,240,0.6)";
 
     d3.tsv(csvTestUrl, (item) => type(item)).then((data) => {
+      // console.log(this.getByClusters(data, 4, 100))
       this.setState({
-        csvData: data,
+        csvData: this.getByClusters(data, 4, 100),
         canvas,
-        context,
-        layout: { ...this.state.layout, width, height }
+        context
       })
     })
   }
@@ -68,15 +61,34 @@ export class DiamondsScatters extends React.PureComponent {
     }
   }
 
+  getByClusters = (data, amount, volume) => {
+    const count = Array.from({length: amount}, (o, i) => i);
+    
+    return count.map(item => {
+      return data.slice(item * volume, (item + 1) * volume)
+    })
+  }
+
   componentDidUpdate(p, s) {
-    let { csvData, context, layout, active, rectFlag } = this.state;
+    let { csvData, context, canvas, layout, active, rectFlag, counter } = this.state;
+    const width = canvas && canvas.width;
+    const height = canvas && canvas.height;
 
-    let csvDataCut = csvData.slice(0, 5000);
-      const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
-      const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
+    console.log(this.state.csvData, s.csvData, active, rectFlag, "STATE")
+    if(csvData !== null) {
+      // let csvDataCut = [{carat: 0.11, price: 225}, {carat: 0.31, price: 245}];
+      let csvDataCut = csvData[active];
+      const x = d3.scaleLinear().range([0, width - 50]);
+      const y = d3.scaleLinear().range([height - 50, 0]);
 
-      x.domain(d3.extent(csvDataCut, (d) => d.carat));
-      y.domain(d3.extent(csvDataCut, (d) => d.price));
+      // x.domain(d3.extent(csvDataCut, (d) => d.carat));
+      // y.domain(d3.extent(csvDataCut, (d) => d.price));
+      
+      x.domain([0, 1]);
+      y.domain([3000, 0]);
+      
+      console.log(csvDataCut)
+      console.log(x, y)
 
       const add = this.addDots(context, x, y);
       const remove = this.removeDots(context, x, y);
@@ -84,20 +96,28 @@ export class DiamondsScatters extends React.PureComponent {
       if(rectFlag) {
         this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, add));
       } else {
+        console.log("WR")
         this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, remove));
 
       }
+    }
   }
 
   removeDots = (context, x, y) => {
     return (d) => {
-      context.clearRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
+      console.log("REMOVE")
+
+      context.clearRect(x(d.carat), y(d.price) - 10, 30, 30);
+      // context.clearRect(0, 0, 930, 430);
     }
   }
 
-  addDots = (context, x, y) => {
+  addDots = (ctx, x, y) => {
     return (d) => {
-      context.fillRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
+      ctx.beginPath();
+      ctx.arc(x(d.carat), y(d.price), 2, 0, 2 * Math.PI);
+      ctx.fill();
+      // context.fillRect(x(d.carat), y(d.price), 30, 30);
     }
   }
   
@@ -111,28 +131,19 @@ export class DiamondsScatters extends React.PureComponent {
     }
   }
 
-  canvasClick = (e) => {
-    console.log(e.target)
-  }
-
   render() {
-    const layoutStyle = {
-      top: 200,
-      left: 200
-    }
+    console.log(this.props)
     return (
-      <Wrap style={{ border: "1px solid black", display: "flex", justifyContent: "flex-start", flexDirection: "column" }}>
-        <h1 style={{ marginBottom: "40px" }}> Canvas scatters</h1>
-        <button>Animate dots</button>
-        <canvas width="960" height="960" onClick={this.canvasClick} style={layoutStyle}/>
-        <svg width="960" height="960" style={layoutStyle}>
+      <Fragment>
+        <canvas id="diamonds" width={this.props.w} height={this.props.h}/>
+        <svg>
           {
             [[200, 300], [100, 50], [400, 50], [275, 140]].map(([x, y], i) => <g transform={`translate(${x}, ${y})`} key={i.toString() + (x + y).toString()}>
               <rect x="0" y="0" fill="red" width="30px" height="30px" onClick={this.rectClick(i)}></rect>
           </g>)
           }
         </svg>
-      </Wrap>
+      </Fragment>
     );
   }
 }

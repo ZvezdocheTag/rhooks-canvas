@@ -10,7 +10,6 @@ class App extends React.Component {
   state = {};
 
   setCanvasWrapperRef = name => element => {
-    console.log(this, name, element)
     this.wrappers[name] = element;
   };
 
@@ -39,7 +38,7 @@ class App extends React.Component {
           if(this.wrappers[item]) {
             h = this.wrappers[item].offsetHeight;
             w = this.wrappers[item].offsetWidth;
-            // console.log(this.wrappers[item].offsetHeight, this.wrappers[item].offsetWidth)
+            console.log(this.wrappers[item].offsetHeight, this.wrappers[item].offsetWidth, "ITEM", item)
           }
           return <div key={item} style={{ display: "flex" }}>
             <div ref={this.setCanvasWrapperRef(item)} style={{ position: "relative", width: "calc(100% - 30px)", height: "100%" }}>

@@ -1,14 +1,10 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import *  as d3 from 'd3'
-
-
 
 export class StepsTileAnimation extends Component {
   state = {
     context: null,
     canvas: null,
-    grid: null,
-    active: false,
     layout: {
       w: this.props.w,
       h: this.props.h,
@@ -29,11 +25,12 @@ export class StepsTileAnimation extends Component {
 
   componentDidUpdate(p, s) {
     const { context, canvas,  layout: { cols,rows } } = this.state;
-    var cellWidth = canvas.width / cols,
+    let cellWidth = canvas.width / cols,
     cellHeight = canvas.height /rows,
     grid = [],
     axis = [],
     y = 0, x;
+
     let currentPoint = 0;
 
     if(context !== null) {

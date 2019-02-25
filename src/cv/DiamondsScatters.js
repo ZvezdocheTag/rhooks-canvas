@@ -20,12 +20,17 @@ function type(d) {
  * 3. Manipulate data with slicing and pushing new one
  * 4. Update data on canvas with events
  */
+
+const duration = 1050;
+const ease = d3.easeCubic;
+
 export class DiamondsScatters extends Component {
   state = {
     csvData: null,
     canvas: null,
     context: null,
     rectFlag: false,
+    activeCluster: null,
     counter: 0,
     active: 0,
     layout: {
@@ -44,7 +49,7 @@ export class DiamondsScatters extends Component {
     d3.tsv(csvTestUrl, (item) => type(item)).then((data) => {
       // console.log(this.getByClusters(data, 4, 100))
       this.setState({
-        csvData: this.getByClusters(data, 4, 100),
+        csvData: this.getByClusters(data, 4, 1000),
         canvas,
         context
       })
@@ -70,42 +75,39 @@ export class DiamondsScatters extends Component {
   }
 
   componentDidUpdate(p, s) {
-    let { csvData, context, canvas, layout, active, rectFlag, counter } = this.state;
+    let { csvData, context, canvas, oldData, layout, active, rectFlag, counter } = this.state;
+    
     const width = canvas && canvas.width;
     const height = canvas && canvas.height;
 
-    console.log(this.state.csvData, s.csvData, active, rectFlag, "STATE")
-    if(csvData !== null) {
-      // let csvDataCut = [{carat: 0.11, price: 225}, {carat: 0.31, price: 245}];
-      let csvDataCut = csvData[active];
-      const x = d3.scaleLinear().range([0, width - 50]);
-      const y = d3.scaleLinear().range([height - 50, 0]);
+    let animatedPoint = 0;
 
-      // x.domain(d3.extent(csvDataCut, (d) => d.carat));
-      // y.domain(d3.extent(csvDataCut, (d) => d.price));
-      
+    if(csvData !== null) {
+      let csvDataCut = csvData;
+      const x = d3.scaleLinear().range([0, width - 150]);
+      const y = d3.scaleLinear().range([height - 150, 0]);
+  
       x.domain([0, 1]);
       y.domain([3000, 0]);
-      
-      console.log(csvDataCut)
-      console.log(x, y)
 
       const add = this.addDots(context, x, y);
       const remove = this.removeDots(context, x, y);
       
+      context.clearRect(0, 0, width, height )
       if(rectFlag) {
-        this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, add));
+        
+        animatedPoint = this.initAnimation(animatedPoint, csvDataCut, context, x, y)
+          
+       
       } else {
-        console.log("WR")
-        this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, remove));
-
+        // this.d3timer = d3.timer(this.canvasFillAnimationDecorator(csvDataCut, remove));
       }
     }
   }
 
   removeDots = (context, x, y) => {
     return (d) => {
-      console.log("REMOVE")
+      // console.log("REMOVE")
 
       context.clearRect(x(d.carat), y(d.price) - 10, 30, 30);
       // context.clearRect(0, 0, 930, 430);
@@ -121,15 +123,62 @@ export class DiamondsScatters extends Component {
     }
   }
   
-  canvasFillAnimationDecorator = (obj, cb) => {
-    return () => {
-      var d;
-      for (var i = 0, n = 500; i < n; ++i) {
-        if (!(d = obj.pop())) return this.d3timer.stop();
-        cb(d)
-      }
-    }
+  addAnimDots = (velocity, ctx, d, x, y) => {
+    ctx.beginPath();
+    ctx.arc(x(d.carat) * velocity, y(d.price) * velocity, 2, 0, 2 * Math.PI);
+    ctx.fill();
   }
+  // OLD ANIMATION
+
+  initAnimation = (idx, arr, ctx, x, y) => {
+    this.d3timer = d3.timer((elapsed) => {
+      const t = Math.min(1, ease(elapsed / duration));
+
+      // arr[idx].forEach(item => {
+      //   ctx.clearRect(x(item.carat), y(item.price) - 10, 30, 30);
+      // })
+
+      arr[idx].forEach(item => {
+        ctx.beginPath();
+        ctx.arc(x(item.carat), y(item.price), 2, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.globalAlpha = Math.min(1, t)
+      })
+
+      if (t === 1) {
+        this.d3timer = this.d3timer.stop()
+        idx += 1;
+
+        if(idx !== arr.length) {
+          this.initAnimation(idx, arr, ctx, x, y)
+        }
+
+      };
+    });
+
+    return idx;
+  }
+
+  // canvasFillAnimationDecorator = (obj, ctx, x, y) => {
+  //   return (elapsed) => {
+  //     const t = Math.min(1, ease(elapsed / duration));
+
+  //     obj.forEach(item => {
+  //       ctx.clearRect(x(item.carat), y(item.price) - 10, 30, 30);
+  //     })
+
+  //     obj.forEach(item => {
+  //       ctx.beginPath();
+  //       ctx.arc(x(item.carat), y(item.price), 2, 0, 2 * Math.PI);
+  //       ctx.fill();
+
+  //       ctx.globalAlpha = Math.min(1, t)
+  //     })
+
+  //     if (t === 1) return this.d3timer.stop();
+  //   }
+  // }
 
   render() {
     console.log(this.props)

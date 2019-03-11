@@ -9328,6 +9328,11 @@ stack-utils@^1.0.1:
   resolved "https://registry.yarnpkg.com/stack-utils/-/stack-utils-1.0.2.tgz#33eba3897788558bebfc2db059dc158ec36cebb8"
   integrity sha512-MTX+MeG5U994cazkjd/9KNAapsHnibjMLnfXodlkXw76JEea0UiNzrqidzo1emMwk7w5Qhc9jd4Bn9TBb1MFwA==
 
+standards@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/standards/-/standards-0.1.0.tgz#390a5a23030c59f355a5680b1d010d14c1d6b265"
+  integrity sha512-DPwV/9sAzAvYaVS9eTiJVhoGOCpOXbbejfbHVrjxIgVqZzoDbUWK25kfMmZaTqAVdntoSqsJdfZ3LMjpdheNIw==
+
 static-extend@^0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/static-extend/-/static-extend-0.1.2.tgz#60809c39cbff55337226fd5e0b520f341f1fb5c6"

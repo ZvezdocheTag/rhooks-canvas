@@ -1,14 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Canvas from "./Canvas";
+import CanvasPage from "./CanvasPage";
+// import * as Canvas from "./cv";
+// import Query from './hooks/Query'
 import "./styles.css";
 
-function App() {
-  return (
-    <div className="App">
-      <Canvas />
-    </div>
-  );
+class App extends React.Component {
+
+
+  render() {
+    return (
+      <div className="App">
+          <CanvasPage />
+      </div>
+    );
+  }
 }
 
 const rootElement = document.getElementById("root");

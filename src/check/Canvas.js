@@ -79,7 +79,8 @@ export default class Canvas extends React.PureComponent {
         let csvDataCut = csvData.slice(activeCluster[active][0], activeCluster[active][1]);
         const x = d3.scaleLinear().rangeRound([0, layout.width - 2]);
         const y = d3.scaleLinear().rangeRound([layout.height - 2, 0]);
-  
+        
+        // let dots = 
         x.domain(d3.extent(csvDataCut, (d) => d.carat));
         y.domain(d3.extent(csvDataCut, (d) => d.price));
 
@@ -104,7 +105,13 @@ export default class Canvas extends React.PureComponent {
   }
 
   addDots = (context, x, y) => {
-    return (d) => {
+    let o = 0;
+    return (d, i) => {
+      // context.globalAlpha = 0;
+      // context.clearRect(0, 0, Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2 )
+
+
+      context.globalAlpha = i;
       context.fillRect(x(d.carat), y(d.price), Math.max(2, x(d.carat + 0.01) - x(d.carat)), 2);
     }
   }
@@ -112,9 +119,11 @@ export default class Canvas extends React.PureComponent {
   canvasFillAnimationDecorator = (obj, cb) => {
     return () => {
       var d;
-      for (var i = 0, n = 500; i < n; ++i) {
+      for (var i = 0, n = 1; i < n; i += 0.02) {
         if (!(d = obj.pop())) return this.d3timer.stop();
-        cb(d)
+        // console.log(d, i, n,  "T")
+        
+        cb(d, i)
       }
     }
   }
@@ -131,6 +140,7 @@ export default class Canvas extends React.PureComponent {
     return (
       <Wrap style={{ border: "1px solid black", display: "flex", justifyContent: "flex-start", flexDirection: "column" }}>
         <h1 style={{ marginBottom: "40px" }}> Canvas scatters</h1>
+        <button>Animate dots</button>
         <canvas width="960" height="960" onClick={this.canvasClick} style={layoutStyle}/>
         <svg width="960" height="960" style={layoutStyle}>
           {

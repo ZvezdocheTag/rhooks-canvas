@@ -5,7 +5,11 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
+    "@emotion/core": "^10.0.7",
+    "@reach/router": "^1.2.1",
     "d3": "5.9.1",
+    "graphql-request": "^1.8.2",
+    "netlify-auth-providers": "^1.0.0-alpha5",
     "react": "16.8.0",
     "react-dom": "16.8.0",
     "react-scripts": "2.0.3",

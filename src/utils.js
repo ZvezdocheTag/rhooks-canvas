@@ -1,5 +1,6 @@
 
 export const colorsPallet = [
+    '#26303C',
     '#FF6D1D',
     '#FFA519',
     '#9967A4',

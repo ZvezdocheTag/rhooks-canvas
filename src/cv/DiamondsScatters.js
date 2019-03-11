@@ -45,11 +45,12 @@ export class DiamondsScatters extends Component {
 
     context.globalCompositeOperation = "multiply";
     context.fillStyle = "rgba(60,180,240,0.6)";
+    
 
     d3.tsv(csvTestUrl, (item) => type(item)).then((data) => {
       // console.log(this.getByClusters(data, 4, 100))
       this.setState({
-        csvData: this.getByClusters(data, 4, 1000),
+        csvData: this.getByClusters(data, 4, 10000),
         canvas,
         context
       })

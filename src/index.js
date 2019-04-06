@@ -6,8 +6,6 @@ import CanvasPage from "./CanvasPage";
 import "./styles.css";
 
 class App extends React.Component {
-
-
   render() {
     return (
       <div className="App">
